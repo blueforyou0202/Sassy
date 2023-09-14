@@ -1,0 +1,8 @@
+# .gitignore
+
+# Ignore custom environment variables file
+config.env
+config.json
+moderationLogs.db
+
+
