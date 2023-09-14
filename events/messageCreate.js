@@ -1,15 +1,27 @@
 const config = require('../config.json');
+const db = require('../database');
 
-module.exports = (client, message) => {
-    // Log every message the bot sees
-    // console.log("Received message content:", message.content);
+module.exports = async (client, message) => {
+    // Fetch custom prefix from database
+    let prefix = config.prefix; // Default prefix
+    const serverId = message.guild.id;
 
-    if (!message.content.startsWith(config.prefix) || message.author.bot) return;
+    await new Promise(resolve => {
+        db.get('SELECT prefix FROM server_config WHERE server_id = ?', [serverId], (err, row) => {
+            if (err) {
+                console.error(err.message);
+            } else if (row) {
+                prefix = row.prefix;
+            }
+            resolve();
+        });
+    });
 
-    const args = message.content.slice(config.prefix.length).split(/ +/);
+    if (!message.content.startsWith(prefix) || message.author.bot) return;
+
+    const args = message.content.slice(prefix.length).split(/ +/);
     const commandName = args.shift().toLowerCase();
 
-    // Here's where you check for the command or any of its aliases:
     const command = client.commands.get(commandName) || client.commands.find(cmd => cmd.aliases && cmd.aliases.includes(commandName));
     if (!command) return;
 

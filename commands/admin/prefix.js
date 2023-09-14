@@ -25,6 +25,7 @@ module.exports = {
             console.error(err.message);
             return message.reply('An error occurred while updating the prefix.');
           }
+          console.log(`Prefix updated for server ${serverId} to ${newPrefix}`);  // Logging
           message.reply(`Prefix updated to ${newPrefix}`);
         });
       } else {
@@ -34,6 +35,7 @@ module.exports = {
             console.error(err.message);
             return message.reply('An error occurred while setting the prefix.');
           }
+          console.log(`Prefix set for server ${serverId} to ${newPrefix}`);  // Logging
           message.reply(`Prefix set to ${newPrefix}`);
         });
       }
