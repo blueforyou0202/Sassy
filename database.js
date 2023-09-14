@@ -51,6 +51,21 @@ db.serialize(() => {
     }
   });
 
+  // Create table for server_roles
+  db.run(`CREATE TABLE IF NOT EXISTS server_roles (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    server_id TEXT,
+    role_name TEXT,
+    role_id TEXT,
+    permission_level INTEGER
+  )`, (err) => {
+    if (err) {
+      console.error('Server roles table creation failed:', err.message);
+    } else {
+      console.log('Server roles table created successfully.');
+    }
+  });
+
   // Check if server_id column exists
   db.all(`PRAGMA table_info(actions)`, [], (err, rows) => {
     if (err) {

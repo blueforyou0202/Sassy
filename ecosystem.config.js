@@ -6,8 +6,8 @@ module.exports = {
       watch: '.',
       autorestart: true,
       git: {
-        repo: 'https://github.com/your-username/your-repository.git', // Replace with your repository URL
-        path: '/path/to/your/repo', // Replace with the path to your repository on your server
+        repo: 'https://github.com/blueforyou0202/Sassy.git', // Replace with your repository URL
+        path: '"C:\Users\dhga2\Desktop\Sassy"', // Replace with the path to your repository on your server
         hook: 'post-receive',
         command: 'npm install && pm2 reload all'
       }

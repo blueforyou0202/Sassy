@@ -3,9 +3,11 @@ const path = require('path');
 
 module.exports = (client) => {
     console.log(`Logged in as ${client.user.tag}!`);
-    client.user.setActivity('video games & the Volcano');
     const checkemoji = client.emojis.cache.get('802793229996130347');
-
+    
+    // Set the bot's activity with the specified emoji
+    client.user.setActivity('Volcano Bong 🌋');
+    
     // Construct the absolute path for restart.json
     const restartFilePath = path.join(__basedir, 'restart.json');
     
