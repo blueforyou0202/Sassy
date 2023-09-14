@@ -4,5 +4,5 @@
 config.env
 config.json
 moderationLogs.db
-
-
+ecosystem.config.js
+del.js
