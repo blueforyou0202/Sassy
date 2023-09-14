@@ -1,7 +1,7 @@
 const db = require('../../database');
 
 module.exports = {
-  name: 'changeprefix',
+  name: 'setprefix',
   description: 'Change the prefix for this server.',
   args: true,
   usage: '<new_prefix>',
