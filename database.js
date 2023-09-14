@@ -38,6 +38,19 @@ db.serialize(() => {
     }
   });
 
+  // Create table for server_config
+  db.run(`CREATE TABLE IF NOT EXISTS server_config (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    server_id TEXT,
+    prefix TEXT
+  )`, (err) => {
+    if (err) {
+      console.error('Server config table creation failed:', err.message);
+    } else {
+      console.log('Server config table created successfully.');
+    }
+  });
+
   // Check if server_id column exists
   db.all(`PRAGMA table_info(actions)`, [], (err, rows) => {
     if (err) {
