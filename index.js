@@ -1,3 +1,5 @@
+console.log("Bot is starting...");
+
 global.__basedir = __dirname;
 const { Client, GatewayIntentBits, Collection } = require('discord.js');
 const winston = require('winston');
@@ -29,6 +31,7 @@ client.cooldowns = new Collection();
 
 // Load commands
 function loadCommands(directory) {
+    console.log(`Loading commands from directory: ${directory}`);
     const commandFiles = fs.readdirSync(directory).filter(file => file.endsWith('.js'));
 
     for (const file of commandFiles) {
@@ -54,7 +57,9 @@ console.log([...client.commands.keys()]); // Display loaded commands
 // Load events
 fs.readdir('./events/', (err, files) => {
     if (err) logger.error(err);
+    console.log("Loading events...");
     files.forEach(file => {
+        console.log(`Loading event: ${file}`);
         const event = require(`./events/${file}`);
         let eventName = file.split('.')[0];
         client.on(eventName, event.bind(null, client));
@@ -67,3 +72,5 @@ process.on('unhandledRejection', error => {
 });
 
 client.login(config.token);
+
+console.log("Bot setup complete.");
