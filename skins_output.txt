@@ -1,5 +1,1 @@
 ID	Case Collection	Weapon	Skin Name	Rarity
-1	Ancient	Nova	Army Sheen	Consumer Grade
-2	Ancient	Nova	Army Sheen	Consumer Grade
-3	Ancient	Nova	Army Sheen	Consumer Grade
-4	Ancient	Nova	Army Sheen	Consumer Grade

@@ -6,6 +6,8 @@ const winston = require('winston');
 const fs = require('fs');
 const config = require('./config.json');
 require('dotenv').config();
+// Define and initialize userSkins map
+const userSkins = new Map();
 
 const client = new Client({
     intents: [
