@@ -1,7 +1,7 @@
 const sqlite3 = require('sqlite3').verbose();
 
 // Open database
-const db = new sqlite3.Database('./moderationLogs.db', (err) => {
+const db = new sqlite3.Database('./dataBase.db', (err) => {
   if (err) {
     console.error('Could not connect to database:', err.message);
   } else {
@@ -38,7 +38,7 @@ db.serialize(() => {
     }
   });
 
-  // Create table for server_config
+  // Server Config
   db.run(`CREATE TABLE IF NOT EXISTS server_config (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     server_id TEXT,
@@ -51,7 +51,7 @@ db.serialize(() => {
     }
   });
 
-  // Create table for server_roles
+  // Server Roles
   db.run(`CREATE TABLE IF NOT EXISTS server_roles (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     server_id TEXT,
@@ -66,26 +66,16 @@ db.serialize(() => {
     }
   });
 
-  // Check if server_id column exists
-  db.all(`PRAGMA table_info(actions)`, [], (err, rows) => {
-    if (err) {
-      console.error('Failed to get table information:', err.message);
-      return;
-    }
-
-    const hasServerId = rows.some(row => row.name === 'server_id');
-
-    if (!hasServerId) {
-      // Alter table to add server_id column
-      db.run(`ALTER TABLE actions ADD COLUMN server_id TEXT`, (err) => {
-        if (err) {
-          console.error('Table alteration failed:', err.message);
-        } else {
-          console.log('Table altered successfully.');
-        }
-      });
-    }
-  });
+  // Create table for skins
+  db.run(`CREATE TABLE IF NOT EXISTS userSkins (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    UserID TEXT,
+    caseCollection TEXT,
+    weapon TEXT,
+    skinName TEXT,
+    rarity TEXT,
+    isStatTrak INTEGER
+  )`);
 });
 
 module.exports = db;
