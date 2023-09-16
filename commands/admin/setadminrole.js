@@ -29,14 +29,22 @@ module.exports = {
       return message.reply("Role not found.");
     }
 
-    // Save to database
-    db.run("INSERT INTO server_roles (server_id, role_name, role_id, permission_level) VALUES (?, ?, ?, ?)", [message.guild.id, role.name, role.id, 1], function(err) {
+    // Delete the previous admin role from the database
+    db.run("DELETE FROM server_roles WHERE server_id = ? AND permission_level = ?", [message.guild.id, 1], (err) => {
       if (err) {
-        console.error('Error setting admin role:', err.message);
-        return message.reply("An error occurred while setting the admin role.");
+        console.error('Error deleting previous admin role:', err.message);
+        return message.reply("An error occurred while deleting the previous admin role.");
       }
-      console.log(`Admin role set to ${role.name} in server ${message.guild.name}`);
-      message.reply(`Admin role set to ${role.name}`);
+      
+      // Save the new admin role to the database
+      db.run("INSERT INTO server_roles (server_id, role_name, role_id, permission_level) VALUES (?, ?, ?, ?)", [message.guild.id, role.name, role.id, 1], function(err) {
+        if (err) {
+          console.error('Error setting admin role:', err.message);
+          return message.reply("An error occurred while setting the admin role.");
+        }
+        console.log(`Admin role set to ${role.name} in server ${message.guild.name}`);
+        message.reply(`Admin role set to ${role.name}`);
+      });
     });
   },
 };

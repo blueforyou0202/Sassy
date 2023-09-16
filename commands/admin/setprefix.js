@@ -7,7 +7,12 @@ module.exports = {
   usage: '<new_prefix>',
   guildOnly: true,
   permissions: 'ADMINISTRATOR',
-  execute(message, args) {
+  async execute(message, args) {
+    // Check if the user is the server owner or an existing admin
+    if (message.author.id !== message.guild.ownerId) {
+      return message.reply("You don't have permission to change the prefix.");
+    }
+
     const newPrefix = args[0];
     const serverId = message.guild.id;
 
