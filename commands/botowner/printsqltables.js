@@ -3,7 +3,7 @@ const db = require(`${global.__basedir}/database`);
 const config = require(`${global.__basedir}/config.json`);
 
 module.exports = {
-  name: 'sqllist',
+  name: 'printsqltables',
   description: 'Lists all tables and their content. Bot owner only.',
   async execute(message, args) {
     if (message.author.id !== config.ownerID) {
