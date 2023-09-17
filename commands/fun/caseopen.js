@@ -39,7 +39,11 @@ module.exports = {
         return;
       }
     }
+
+    // Get the number of cases to open from args (default to 1 if not provided)
+    const numCases = args[0] ? parseInt(args[0]) : 1;
     const caseemoji = client.emojis.cache.get('1152495572696178709');
+
     // Set a cooldown for the user (adjust the cooldown time as needed)
     const cooldownTime = 1000; // 3 seconds
     cooldowns.set(message.author.id, Date.now() + cooldownTime);
@@ -66,7 +70,7 @@ module.exports = {
         // console.log("Debugging selectedSkin object:", selectedSkin);
         const rarityName = selectedSkin.rarity.name;
         const skinId = userSkins.size + 1; // Calculate the skin index
-        const skinTitle = `${selectedSkin.floatVal ? `(${getCondition(selectedSkin.floatVal)}) ` : ''}${selectedSkin.weapon.name} | ${selectedSkin.name}`;
+        const skinTitle = `${selectedSkin.floatVal ? `(${getCondition(selectedSkin.floatVal)}) ` : ''}${selectedSkin.name}`;
         const skinColor = rarityColors[rarityName] || '#FFFFFF'; // Default to white if rarity is not found
         const collectionName = selectedSkin.collections[0].name; // Assuming there's only one collection per skin
         const weaponName = selectedSkin.weapon.name;
@@ -74,8 +78,8 @@ module.exports = {
 
 
         embed.setTitle(skinTitle)
-        .setDescription(`Collection: ${collectionName}\nWeapon: ${weaponName}\nSkin: ${selectedSkin.name}\nRarity: ${selectedSkin.rarity.name}\nStatTrak: ${selectedSkin.stattrak ? 'Yes' : 'No'}`)
-        .setColor(skinColor);
+            .setDescription(`Collection: ${collectionName}\nWeapon: ${weaponName}\nSkin: ${selectedSkin.name}\nRarity: ${selectedSkin.rarity.name}\nStatTrak: ${selectedSkin.stattrak ? 'Yes' : 'No'}`)
+            .setColor(skinColor);
 
         // Update the embed
         await msg.edit({ embeds: [embed] });

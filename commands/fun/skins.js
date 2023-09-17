@@ -41,14 +41,14 @@ module.exports = {
   name: 'skins',
   description: 'Display all the skins you own',
   async execute(message, args, client) {
-    winston.info('Execute function triggered');
+    // winston.info('Execute function triggered');
 
     db.all(`SELECT * FROM userSkins WHERE UserID = ?`, [message.author.id], async (err, rows) => {
       if (err) {
         winston.error(err);
         return;
       }
-      winston.info('Database query successful');
+    //   winston.info('Database query successful');
 
       const groupedSkins = groupByRarity(rows);
       const sortedRarities = Object.keys(groupedSkins).sort((a, b) => Object.keys(rarityColors).indexOf(b) - Object.keys(rarityColors).indexOf(a));
@@ -64,14 +64,15 @@ module.exports = {
           const weapon = JSON.parse(row.weapon)?.name || 'Unknown';
           const wearCondition = getCondition(row.floatVal);
           const statTrak = row.isStatTrak ? "StatTrak™ " : "";
-          const title = `Skin Index: ${row.id} | (${wearCondition}) ${statTrak}${weapon} | ${row.skinName}`;
+          const title = `[Skin Index #${row.id}] (${wearCondition}) ${statTrak}${weapon} | ${row.skinName}`;
           const value = `Collection: ${row.caseCollection}\nWeapon: ${weapon}\nSkin: ${row.skinName}\nRarity: ${rarity}\nStatTrak: ${row.isStatTrak ? 'Yes' : 'No'}\nDescription: ${row.description}\nCategory: ${row.categoryName}\nPattern: ${row.patternName}\nMin Float: ${row.min_float}\nMax Float: ${row.max_float}\n SkinID: #${skinId}`;
           fieldsArray.push({ name: title, value: value });
         });
 
         for (let j = 0; j < fieldsArray.length; j += 10) {
-          embeds.push({ fields: fieldsArray.slice(j, j + 10), color: parseInt(rarityColors[rarity].substring(1), 16), author: { name: rarity } });
-        }
+            const colorCode = rarityColors[rarity] ? rarityColors[rarity].substring(1) : "FFFFFF"; // Default to white
+            embeds.push({ fields: fieldsArray.slice(j, j + 10), color: parseInt(colorCode, 16), author: { name: rarity } });
+          }
       });
 
       const pagination = new Pagination(message, {
@@ -82,10 +83,10 @@ module.exports = {
       try {
         pagination.setEmbeds(embeds);
         pagination.render();
-        winston.info('Pagination rendered');
+        // winston.info('Pagination rendered');
       } catch (error) {
-        winston.error('Failed to render pagination:', error);
-      }
+    //     winston.error('Failed to render pagination:', error);
+       }
     });
   }
 };

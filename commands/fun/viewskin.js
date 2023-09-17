@@ -3,12 +3,12 @@ const sqlite3 = require('sqlite3').verbose();
 
 // Hex codes for skin rarity colors
 const rarityColors = {
-  'Mil-Spec': '#4B69FF',
-  'Restricted': '#8847FF',
-  'Classified': '#D32CE6',
-  'Covert': '#EB4B4B',
-  'Rare Special Item': '#E4AE33'
-};
+    'Mil-Spec Grade': '#4B69FF',
+    'Restricted': '#8847FF',
+    'Classified': '#D32CE6',
+    'Covert': '#EB4B4B',
+    'Extraordinary': '#E4AE33'
+  };
 
 // Define the getUserSkinsFromDatabase function
 async function getUserSkinsFromDatabase(userId) {
@@ -29,6 +29,11 @@ module.exports = {
     name: 'viewskin',
     description: 'View an individual skin by its index',
     async execute(message, args, client) {
+        // Check if the user provided an argument
+      if (!args[0]) {
+        message.reply('Please provide a skin index.');
+        return;
+      }
       const userSkins = await getUserSkinsFromDatabase(message.author.id);
 
     // Added logging for debugging
