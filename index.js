@@ -33,7 +33,7 @@ client.cooldowns = new Collection();
 
 // Load commands
 function loadCommands(directory) {
-    console.log(`Loading commands from directory: ${directory}`);
+    // console.log(`Loading commands from directory: ${directory}`);
     const commandFiles = fs.readdirSync(directory).filter(file => file.endsWith('.js'));
 
     for (const file of commandFiles) {
@@ -54,7 +54,7 @@ function loadCommands(directory) {
 }
 
 loadCommands('./commands');
-console.log([...client.commands.keys()]); // Display loaded commands
+// console.log([...client.commands.keys()]); // Display loaded commands
 
 // Load events
 fs.readdir('./events/', (err, files) => {

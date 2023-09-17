@@ -28,7 +28,7 @@ module.exports = {
   description: 'Open a CSGO weapon case',
   async execute(message, args, client) {
     // Logging 1: Add a log for starting the command execution
-    console.log('Starting caseopen command execution.');
+    // console.log('Starting caseopen command execution.');
 
     // Check if the user is on cooldown
     if (cooldowns.has(message.author.id)) {
@@ -48,7 +48,7 @@ module.exports = {
     const skinsData = JSON.parse(fs.readFileSync(skinsFilePath, 'utf8'));
 
     // Logging 2: Add a log for reading skins.json
-    console.log('Read skins data from skins.json:');
+    // console.log('Read skins data from skins.json:');
 
     // Create an initial embed
     const embed = new EmbedBuilder()
@@ -62,9 +62,11 @@ module.exports = {
     setTimeout(async () => {
       try {
         const selectedSkin = await getRandomSkin(skinsData);
+        // Added log to debug the selectedSkin object
+        // console.log("Debugging selectedSkin object:", selectedSkin);
         const rarityName = selectedSkin.rarity.name;
         const skinId = userSkins.size + 1; // Calculate the skin index
-        const skinTitle = `${selectedSkin.floatVal ? `(${getCondition(selectedSkin.floatVal)}) ` : ''}${selectedSkin.weapon.name} | ${selectedSkin.pattern.name}`;
+        const skinTitle = `${selectedSkin.floatVal ? `(${getCondition(selectedSkin.floatVal)}) ` : ''}${selectedSkin.weapon.name} | ${selectedSkin.name}`;
         const skinColor = rarityColors[rarityName] || '#FFFFFF'; // Default to white if rarity is not found
         const collectionName = selectedSkin.collections[0].name; // Assuming there's only one collection per skin
         const weaponName = selectedSkin.weapon.name;
@@ -83,37 +85,37 @@ module.exports = {
 
         // Save the selected skin to the database (You'll need to create a table for user skins)
         db.run(`INSERT INTO userSkins (UserID, skinId, name, description, weapon, weaponId, weaponName, categoryId, categoryName, patternId, patternName, min_float, max_float, rarityId, rarityName, stattrak, souvenir, paint_index, wears, collections, crates, image, caseCollection, skinName, rarity, isStatTrak, floatVal, condition) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-          [
-            message.author.id,
-            selectedSkin.skinId,
-            selectedSkin.name,
-            selectedSkin.description,
-            selectedSkin.weapon,
-            selectedSkin.weaponId,
-            selectedSkin.weaponName,
-            selectedSkin.categoryId,
-            selectedSkin.categoryName,
-            selectedSkin.patternId,
-            selectedSkin.patternName,
-            selectedSkin.min_float,
-            selectedSkin.max_float,
-            selectedSkin.rarityId,
-            selectedSkin.rarityName,
-            selectedSkin.stattrak,
-            selectedSkin.souvenir,
-            selectedSkin.paint_index,
-            selectedSkin.wears,
-            selectedSkin.collections,
-            selectedSkin.crates,
-            selectedSkin.image,
-            selectedSkin.caseCollection,
-            selectedSkin.skinName,
-            selectedSkin.rarity,
-            selectedSkin.isStatTrak ? 1 : 0,
-            selectedSkin.floatVal,
-            getCondition(selectedSkin.floatVal)
-          ]);
-
+        [
+          message.author.id,
+          selectedSkin.id,
+          selectedSkin.name,
+          selectedSkin.description,
+          JSON.stringify(selectedSkin.weapon),
+          selectedSkin.weapon.id,
+          selectedSkin.weapon.name,
+          selectedSkin.category.id,
+          selectedSkin.category.name,
+          selectedSkin.pattern.id,
+          selectedSkin.pattern.name,
+          selectedSkin.min_float,
+          selectedSkin.max_float,
+          selectedSkin.rarity.id,
+          selectedSkin.rarity.name,
+          selectedSkin.stattrak ? 1 : 0,
+          selectedSkin.souvenir ? 1 : 0,
+          selectedSkin.paint_index,
+          JSON.stringify(selectedSkin.wears),
+          JSON.stringify(selectedSkin.collections),
+          JSON.stringify(selectedSkin.crates),
+          selectedSkin.image,
+          selectedSkin.collections[0]?.name || null,  // caseCollection
+          selectedSkin.pattern.name || null,  // skinName
+          JSON.stringify(selectedSkin.rarity),
+          selectedSkin.stattrak ? 1 : 0,
+          selectedSkin.floatVal,
+          getCondition(selectedSkin.floatVal)
+        ]);
+        
         // Store the user's skin with an index
         userSkins.set(skinId, selectedSkin);
 

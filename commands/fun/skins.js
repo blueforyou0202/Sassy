@@ -1,17 +1,41 @@
+const { EmbedBuilder } = require('discord.js');
 const { Pagination } = require('pagination.djs');
 const sqlite3 = require('sqlite3').verbose();
 const winston = require('winston');
-const fs = require('fs'); // Add this import for reading JSON files
 
 let db = new sqlite3.Database('./dataBase.db');
 
 const rarityColors = {
-    'Mil-Spec Grade': '#4B69FF',
-    'Restricted': '#8847FF',
-    'Classified': '#D32CE6',
-    'Covert': '#EB4B4B',
-    'Extraordinary': '#E4AE33'
+  'Mil-Spec Grade': '#4B69FF',
+  'Restricted': '#8847FF',
+  'Classified': '#D32CE6',
+  'Covert': '#EB4B4B',
+  'Extraordinary': '#E4AE33'
+};
+
+function normalizeRarity(rarity) {
+  const rarityMapping = {
+    'Mil-Spec Grade': 'Mil-Spec Grade',
+    'Restricted': 'Restricted',
+    'Classified': 'Classified',
+    'Covert': 'Covert',
+    'Extraordinary': 'Extraordinary'
   };
+
+  return rarityMapping[rarity] || null;
+}
+
+function groupByRarity(rows) {
+  const groups = {};
+  rows.forEach(row => {
+    const rarity = JSON.parse(row.rarity)?.name || 'Unknown';
+    if (!groups[rarity]) {
+      groups[rarity] = [];
+    }
+    groups[rarity].push(row);
+  });
+  return groups;
+}
 
 module.exports = {
   name: 'skins',
@@ -20,64 +44,39 @@ module.exports = {
     winston.info('Execute function triggered');
 
     db.all(`SELECT * FROM userSkins WHERE UserID = ?`, [message.author.id], async (err, rows) => {
-        if (err) {
-          winston.error(err);
-          return;
-        }
-        winston.info('Database query successful');
-  
-        const embeds = [];
-  
-        let currentRarity = 'Mil-Spec Grade'; // Default to a valid rarity
+      if (err) {
+        winston.error(err);
+        return;
+      }
+      winston.info('Database query successful');
+
+      const groupedSkins = groupByRarity(rows);
+      const sortedRarities = Object.keys(groupedSkins).sort((a, b) => Object.keys(rarityColors).indexOf(b) - Object.keys(rarityColors).indexOf(a));
+
+      const embeds = [];
+
+      sortedRarities.forEach(rarity => {
         let fieldsArray = [];
-  
-        // Sort the rows by rarity in descending order
-        const sortedRows = rows.sort((a, b) => Object.keys(rarityColors).indexOf(b.rarity) - Object.keys(rarityColors).indexOf(a.rarity));
-  
-        for (let i = 0; i < sortedRows.length; i++) {
-            const row = sortedRows[i];
-            const skinId = row.skinId; // Get the database ID of the skin
+        const skins = groupedSkins[rarity];
 
-            const weapon = row.weapon?.name || 'Unknown';
-            const rarity = normalizeRarity(row.rarity) || 'Unknown';
+        skins.forEach(row => {
+          const skinId = row.skinId;
+          const weapon = JSON.parse(row.weapon)?.name || 'Unknown';
+          const wearCondition = getCondition(row.floatVal);
+          const statTrak = row.isStatTrak ? "StatTrak™ " : "";
+          const title = `Skin Index: ${row.id} | (${wearCondition}) ${statTrak}${weapon} | ${row.skinName}`;
+          const value = `Collection: ${row.caseCollection}\nWeapon: ${weapon}\nSkin: ${row.skinName}\nRarity: ${rarity}\nStatTrak: ${row.isStatTrak ? 'Yes' : 'No'}\nDescription: ${row.description}\nCategory: ${row.categoryName}\nPattern: ${row.patternName}\nMin Float: ${row.min_float}\nMax Float: ${row.max_float}\n SkinID: #${skinId}`;
+          fieldsArray.push({ name: title, value: value });
+        });
 
-          
-            // Function to normalize rarity value
-        function normalizeRarity(rarity) {
-            // Define a mapping of database rarity values to your defined keys
-            const rarityMapping = {
-            'Mil-Spec': 'Mil-Spec Grade',
-            'Restricted': 'Restricted',
-            'Classified': 'Classified',
-            'Covert': 'Covert',
-            'Rare Special Item': 'Extraordinary'
-            };
-        
-            // Check if the rarity value exists in the mapping
-            if (rarityMapping.hasOwnProperty(rarity)) {
-            return rarityMapping[rarity];
-            }
-            return null; // Return null for unrecognized rarities
-        }
-          
-          
-      
-        const wearCondition = getCondition(row.floatVal);
-        const statTrak = row.isStatTrak ? "StatTrak™ " : "";
-        const title = `(#${skinId}) (${wearCondition}) ${statTrak}${weapon} | ${row.skinName}`; // Use skinId as the index
-        const value = `Collection: ${row.caseCollection}\nWeapon: ${weapon}\nSkin: ${row.skinName}\nRarity: ${rarity}\nStatTrak: ${row.isStatTrak ? 'Yes' : 'No'}\nDescription: ${row.description}\nCategory: ${row.categoryName}\nPattern: ${row.patternName}\nMin Float: ${row.min_float}\nMax Float: ${row.max_float}`;
-        fieldsArray.push({ name: title, value: value });
-      }
-
-      if (fieldsArray.length > 0) {
         for (let j = 0; j < fieldsArray.length; j += 10) {
-        embeds.push({ fields: fieldsArray.slice(j, j + 10), color: parseInt(rarityColors[currentRarity].substring(1), 16), author: { name: currentRarity } });
+          embeds.push({ fields: fieldsArray.slice(j, j + 10), color: parseInt(rarityColors[rarity].substring(1), 16), author: { name: rarity } });
         }
-      }
+      });
 
       const pagination = new Pagination(message, {
-        limit: 1, // One embed per page
-        idle: 30000, // idle time in ms before the pagination closes
+        limit: 1,
+        idle: 30000,
       });
 
       try {
@@ -91,7 +90,6 @@ module.exports = {
   }
 };
 
-// Function to get the wear condition name based on float value
 function getCondition(floatValue) {
   if (floatValue >= 0 && floatValue < 0.07) {
     return 'Factory New';

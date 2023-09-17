@@ -26,21 +26,21 @@ async function getUserSkinsFromDatabase(userId) {
 let db = new sqlite3.Database('./dataBase.db');
 
 module.exports = {
-  name: 'viewskin',
-  description: 'View an individual skin by its index',
-  async execute(message, args, client) {
-    const userSkins = await getUserSkinsFromDatabase(message.author.id);
+    name: 'viewskin',
+    description: 'View an individual skin by its index',
+    async execute(message, args, client) {
+      const userSkins = await getUserSkinsFromDatabase(message.author.id);
 
     // Added logging for debugging
-    console.log('Number of user skins:', userSkins.length);
-    console.log('First few user skins:', userSkins.slice(0, 5));
+    // console.log('Number of user skins:', userSkins.length);
+    // console.log('First few user skins:', userSkins.slice(0, 5));
 
     console.log('Executing !viewskin command');
 
-    const skinIndex = parseInt(args[0]);
+    const skinIndex = parseInt(args[0].replace('#', ''));
 
     // Added logging for debugging
-    console.log('Provided skin index:', skinIndex);
+    // console.log('Provided skin index:', skinIndex);
 
     // Potential Fix 1: Use Database ID for Validation
     const validSkinIds = userSkins.map(skin => skin.id);
@@ -60,29 +60,29 @@ module.exports = {
     });
     */
 
-    const selectedSkin = userSkins.find(skin => skin.id === skinIndex);  // Modified this line to find the skin by its database ID
-    console.log('Selected Skin:', selectedSkin);
+    const selectedSkin = userSkins.find(skin => skin.id === skinIndex);
+    // console.log('Selected Skin:', selectedSkin);
 
-    // Get the color based on the skin's rarity
-    const embedColor = rarityColors[selectedSkin.rarity] || '#FFFFFF';  // Default to white if rarity is not recognized
-
+    const rarityName = JSON.parse(selectedSkin.rarity).name;  // Parse the rarity name from the JSON
+    const embedColor = rarityColors[rarityName] || '#FFFFFF';  // Look up the color for the given rarity, default to white if not found
     const wearCondition = getCondition(selectedSkin.floatVal);
 
-    const embed = new MessageEmbed() // Changed from EmbedBuilder to MessageEmbed
-      .setTitle(`[#${selectedSkin.skinId}] (${getCondition(selectedSkin.floatVal)}) ${selectedSkin.weapon} | ${selectedSkin.skinName}`)
-      .addFields(
-        { name: 'Collection', value: selectedSkin.caseCollection },
-        { name: 'Weapon', value: selectedSkin.weapon },
-        { name: 'Skin', value: selectedSkin.skinName },
-        { name: 'Rarity', value: selectedSkin.rarity },
-        { name: 'StatTrak', value: selectedSkin.isStatTrak ? 'Yes' : 'No' },
-        { name: 'Description', value: selectedSkin.description },
-        { name: 'Category', value: selectedSkin.categoryName },
-        { name: 'Pattern', value: selectedSkin.patternName },
-        { name: 'Min Float', value: selectedSkin.min_float },
-        { name: 'Max Float', value: selectedSkin.max_float },
-        { name: 'Float Value', value: selectedSkin.floatVal ? selectedSkin.floatVal.toString() : 'N/A' }
-      )
+    const embed = new EmbedBuilder() // Changed from EmbedBuilder to MessageEmbed
+        .setTitle(`[#${selectedSkin.skinId}] (${getCondition(selectedSkin.floatVal)}) ${JSON.parse(selectedSkin.weapon).name} | ${selectedSkin.skinName}`)
+        .addFields(
+            { name: 'Collection', value: selectedSkin.caseCollection },
+            { name: 'Weapon', value: JSON.parse(selectedSkin.weapon).name },  // Updated
+            { name: 'Skin', value: selectedSkin.skinName },
+            { name: 'Rarity', value: JSON.parse(selectedSkin.rarity).name },  // Updated
+            { name: 'StatTrak', value: selectedSkin.isStatTrak ? 'Yes' : 'No' },
+            { name: 'Description', value: selectedSkin.description },
+            { name: 'Category', value: selectedSkin.categoryName },
+            { name: 'Pattern', value: selectedSkin.patternName },
+            { name: 'Min Float', value: selectedSkin.min_float.toString() },
+            { name: 'Max Float', value: selectedSkin.max_float.toString() },
+            { name: 'Float Value', value: selectedSkin.floatVal ? selectedSkin.floatVal.toString() : 'N/A' }
+          )
+          
       .setColor(embedColor);
 
     message.channel.send({ embeds: [embed] });

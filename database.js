@@ -11,7 +11,7 @@ const db = new sqlite3.Database('./dataBase.db', (err) => {
 
 // Function to run a query and log the server ID and the query itself
 db.runWithServerLog = function (query, params, serverId) {
-  console.log(`Running query for server ${serverId}: ${query}`); // Log the query
+  console.log(`Running query for server ${serverId}: ${query}`);
   this.run(query, params, function (err) {
     if (err) {
       console.error(`Query failed for server ${serverId}:`, err.message);
@@ -50,43 +50,44 @@ db.serialize(() => {
     permission_level INTEGER
   )`);
 
-// Updated User Skins Table
-db.run(`CREATE TABLE IF NOT EXISTS userSkins (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  UserID TEXT,
-  skinId TEXT,
-  name TEXT,
-  description TEXT,
-  weapon TEXT, 
-  weaponId TEXT,
-  weaponName TEXT,
-  categoryId TEXT,
-  categoryName TEXT,
-  patternId TEXT,
-  patternName TEXT,
-  min_float REAL,
-  max_float REAL,
-  rarityId TEXT,
-  rarityName TEXT,
-  stattrak INTEGER,
-  souvenir INTEGER,
-  paint_index INTEGER,
-  wears TEXT,
-  collections TEXT,
-  crates TEXT,
-  image TEXT,
-  caseCollection TEXT,
-  skinName TEXT,
-  rarity TEXT,
-  isStatTrak TEXT,
-  floatVal REAL,
-  condition TEXT
-)`, (err) => {
-  if (err) {
-    console.error('User skins table creation failed:', err.message);
-  } else {
-    console.log('User skins table created successfully.');
-  }
-}) 
-})
+  // Updated User Skins Table
+  db.run(`CREATE TABLE IF NOT EXISTS userSkins (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    UserID TEXT,
+    skinId TEXT,
+    name TEXT,
+    description TEXT,
+    weapon TEXT,
+    weaponId TEXT,
+    weaponName TEXT,
+    categoryId TEXT,
+    categoryName TEXT,
+    patternId TEXT,
+    patternName TEXT,
+    min_float REAL,
+    max_float REAL,
+    rarityId TEXT,
+    rarityName TEXT,
+    stattrak INTEGER,
+    souvenir INTEGER,
+    paint_index INTEGER,
+    wears TEXT,
+    collections TEXT,
+    crates TEXT,
+    image TEXT,
+    caseCollection TEXT,
+    skinName TEXT,
+    rarity TEXT,
+    isStatTrak INTEGER,
+    floatVal REAL,
+    condition TEXT
+  )`, (err) => {
+    if (err) {
+      console.error('User skins table creation failed:', err.message);
+    } else {
+      console.log('User skins table created successfully.');
+    }
+  });
+});
+
 module.exports = db;
