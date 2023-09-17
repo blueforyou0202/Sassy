@@ -2,6 +2,7 @@ const { EmbedBuilder } = require('discord.js');
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 const db = require('../../database');
+const fs = require('fs'); // Add this import for reading JSON files
 
 // Initialize the userSkins Map
 const userSkins = new Map();
@@ -9,16 +10,16 @@ const userSkins = new Map();
 // Cooldowns for the caseopen command (adjust as needed)
 const cooldowns = new Map();
 
-// Path to the allcsgoskins.json file
-const skinsFilePath = path.join(__basedir, 'allcsgoskins.json');
+// Path to the skins.json file
+const skinsFilePath = path.join(__dirname, '..', '..', 'skins.json'); // Update this path to your skins.json file
 
 // Hex codes for skin rarity colors
 const rarityColors = {
-  'Mil-Spec': '#4B69FF',
+  'Mil-Spec Grade': '#4B69FF',
   'Restricted': '#8847FF',
   'Classified': '#D32CE6',
   'Covert': '#EB4B4B',
-  'Rare Special Item': '#E4AE33'
+  'Extraordinary': '#E4AE33'
 };
 
 module.exports = {
@@ -26,6 +27,9 @@ module.exports = {
   aliases: ['case'],
   description: 'Open a CSGO weapon case',
   async execute(message, args, client) {
+    // Logging 1: Add a log for starting the command execution
+    console.log('Starting caseopen command execution.');
+
     // Check if the user is on cooldown
     if (cooldowns.has(message.author.id)) {
       const expirationTime = cooldowns.get(message.author.id);
@@ -37,11 +41,14 @@ module.exports = {
     }
     const caseemoji = client.emojis.cache.get('1152495572696178709');
     // Set a cooldown for the user (adjust the cooldown time as needed)
-    const cooldownTime = 3000; // 3 seconds
+    const cooldownTime = 1000; // 3 seconds
     cooldowns.set(message.author.id, Date.now() + cooldownTime);
 
-    // Read the allcsgoskins.json file to get skin data
-    const skinsData = require(skinsFilePath);
+    // Read the skins data from skins.json
+    const skinsData = JSON.parse(fs.readFileSync(skinsFilePath, 'utf8'));
+
+    // Logging 2: Add a log for reading skins.json
+    console.log('Read skins data from skins.json:');
 
     // Create an initial embed
     const embed = new EmbedBuilder()
@@ -55,22 +62,65 @@ module.exports = {
     setTimeout(async () => {
       try {
         const selectedSkin = await getRandomSkin(skinsData);
-        const skinIndex = userSkins.size + 1; // Calculate the skin index
-        const skinTitle = `[#${skinIndex}] ${selectedSkin.floatVal ? `(${getCondition(selectedSkin.floatVal)}) ` : ''}${selectedSkin.weapon} | ${selectedSkin.skinName}`;
-        const skinColor = rarityColors[selectedSkin.rarity] || '#FFFFFF'; // Default to white if rarity is not recognized
+        const rarityName = selectedSkin.rarity.name;
+        const skinId = userSkins.size + 1; // Calculate the skin index
+        const skinTitle = `${selectedSkin.floatVal ? `(${getCondition(selectedSkin.floatVal)}) ` : ''}${selectedSkin.weapon.name} | ${selectedSkin.pattern.name}`;
+        const skinColor = rarityColors[rarityName] || '#FFFFFF'; // Default to white if rarity is not found
+        const collectionName = selectedSkin.collections[0].name; // Assuming there's only one collection per skin
+        const weaponName = selectedSkin.weapon.name;
+
+
+
         embed.setTitle(skinTitle)
-          .setDescription(`Collection: ${selectedSkin.caseCollection}\nWeapon: ${selectedSkin.weapon}\nSkin: ${selectedSkin.skinName}\nRarity: ${selectedSkin.rarity}\nStatTrak: ${selectedSkin.isStatTrak ? 'Yes' : 'No'}`)
-          .setColor(skinColor);
+        .setDescription(`Collection: ${collectionName}\nWeapon: ${weaponName}\nSkin: ${selectedSkin.name}\nRarity: ${selectedSkin.rarity.name}\nStatTrak: ${selectedSkin.stattrak ? 'Yes' : 'No'}`)
+        .setColor(skinColor);
 
         // Update the embed
         await msg.edit({ embeds: [embed] });
 
+        // Logging 3: Add a log for successful skin insertion
+        // console.log('Inserted selected skin into the database:', selectedSkin);
+
         // Save the selected skin to the database (You'll need to create a table for user skins)
-        db.run(`INSERT INTO userSkins (UserID, caseCollection, weapon, skinName, rarity, isStatTrak, floatVal, condition) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`, [message.author.id, selectedSkin.caseCollection, selectedSkin.weapon, selectedSkin.skinName, selectedSkin.rarity, selectedSkin.isStatTrak ? 1 : 0, selectedSkin.floatVal, getCondition(selectedSkin.floatVal)]);
+        db.run(`INSERT INTO userSkins (UserID, skinId, name, description, weapon, weaponId, weaponName, categoryId, categoryName, patternId, patternName, min_float, max_float, rarityId, rarityName, stattrak, souvenir, paint_index, wears, collections, crates, image, caseCollection, skinName, rarity, isStatTrak, floatVal, condition) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          [
+            message.author.id,
+            selectedSkin.skinId,
+            selectedSkin.name,
+            selectedSkin.description,
+            selectedSkin.weapon,
+            selectedSkin.weaponId,
+            selectedSkin.weaponName,
+            selectedSkin.categoryId,
+            selectedSkin.categoryName,
+            selectedSkin.patternId,
+            selectedSkin.patternName,
+            selectedSkin.min_float,
+            selectedSkin.max_float,
+            selectedSkin.rarityId,
+            selectedSkin.rarityName,
+            selectedSkin.stattrak,
+            selectedSkin.souvenir,
+            selectedSkin.paint_index,
+            selectedSkin.wears,
+            selectedSkin.collections,
+            selectedSkin.crates,
+            selectedSkin.image,
+            selectedSkin.caseCollection,
+            selectedSkin.skinName,
+            selectedSkin.rarity,
+            selectedSkin.isStatTrak ? 1 : 0,
+            selectedSkin.floatVal,
+            getCondition(selectedSkin.floatVal)
+          ]);
 
         // Store the user's skin with an index
-        userSkins.set(skinIndex, selectedSkin);
+        userSkins.set(skinId, selectedSkin);
+
+        // Inform the user that the skin has been added to their inventory
+        message.reply(`You've unboxed: **${selectedSkin.name}!** It has been added to your inventory.`);
       } catch (error) {
+        // Logging 4: Add a log for handling errors
         console.error('An error occurred:', error);
         message.channel.send('An error occurred while opening the case.');
       }
@@ -80,59 +130,66 @@ module.exports = {
 
 // Function to get a random skin from the provided skinsData
 function getRandomSkin(skinsData) {
-  return new Promise((resolve, reject) => {
-    // Define the rarity percentages
-    const rarityPercentages = {
-      'Mil-Spec': { normal: 79.92, statTrak: 7.99 },
-      'Restricted': { normal: 15.98, statTrak: 1.59 },
-      'Classified': { normal: 3.2, statTrak: 0.32 },
-      'Covert': { normal: 0.64, statTrak: 0.064 },
-      'Rare Special Item': { normal: 0.26, statTrak: 0.026 }
-    };
+    return new Promise((resolve, reject) => {
+        try {
+      // Define the rarity percentages
+      const rarityPercentages = {
+        'Mil-Spec Grade': { normal: 79.92, statTrak: 7.99 },
+        'Restricted': { normal: 15.98, statTrak: 1.59 },
+        'Classified': { normal: 3.2, statTrak: 0.32 },
+        'Covert': { normal: 0.64, statTrak: 0.064 },
+        'Extraordinary': { normal: 0.26, statTrak: 0.026 }
+      };
 
-    // Generate a random number between 0 and 100
-    const randomNum = Math.random() * 100;
-
-    // Determine the rarity based on the random number
-    let cumulativeProbability = 0;
-    let selectedRarity = null;
-    let isStatTrak = false;
-
-    for (const [rarity, percentages] of Object.entries(rarityPercentages)) {
-      cumulativeProbability += percentages.normal;
-      if (randomNum < cumulativeProbability) {
-        selectedRarity = rarity;
-        break;
+      // Calculate the total percentage for normal and StatTrak skins
+      let totalNormalPercentage = 0;
+      let totalStatTrakPercentage = 0;
+      for (const rarity in rarityPercentages) {
+        totalNormalPercentage += rarityPercentages[rarity].normal;
+        totalStatTrakPercentage += rarityPercentages[rarity].statTrak;
       }
-
-      cumulativeProbability += percentages.statTrak;
-      if (randomNum < cumulativeProbability) {
-        selectedRarity = rarity;
-        isStatTrak = true;
-        break;
+  
+      // Generate a random number between 0 and the total normal percentage
+      const randomNum = Math.random() * totalNormalPercentage;
+  
+      // Determine the rarity based on the random number
+      let cumulativeProbability = 0;
+      let selectedRarity = null;
+      let isStatTrak = false;
+  
+      for (const rarity in rarityPercentages) {
+        cumulativeProbability += rarityPercentages[rarity].normal;
+        if (randomNum < cumulativeProbability) {
+          selectedRarity = rarity;
+          break;
+        }
       }
-    }
-
-    // Filter skins from the provided data by the selected rarity
-    const filteredSkins = skinsData.filter(skin => skin.rarity === selectedRarity);
-
-    // Randomly select a skin from the filtered list
-    const selectedSkin = filteredSkins[Math.floor(Math.random() * filteredSkins.length)];
-
-    if (!selectedSkin) {
-      reject(new Error('No skin could be selected.'));
-      return;
-    }
-
-    // Add StatTrak information
-    selectedSkin.isStatTrak = isStatTrak;
-
-    // Add float value information
-    selectedSkin.floatVal = getRandomFloatValue();
-
-    resolve(selectedSkin);
-  });
+  
+      // Filter skins from the provided data by the selected rarity
+      const filteredSkins = skinsData.filter(skin => skin.rarity.name === selectedRarity);
+  
+      // Randomly select a skin from the filtered list
+      const selectedSkin = filteredSkins[Math.floor(Math.random() * filteredSkins.length)];
+  
+      if (!selectedSkin) {
+        reject(new Error('No skin could be selected.'));
+        return;
+      }
+  
+      // Add StatTrak information
+      selectedSkin.isStatTrak = isStatTrak;
+  
+      // Add float value information
+      selectedSkin.floatVal = getRandomFloatValue();
+  
+      resolve(selectedSkin);
+        } catch (error) {
+            console.error('An error occurred:', error);
+            reject(error); // Handle the rejection here
+        }
+    });
 }
+
 
 // Function to get a random float value based on CS:GO wear conditions
 function getRandomFloatValue() {

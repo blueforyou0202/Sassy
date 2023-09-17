@@ -1,0 +1,54 @@
+Database Tables:
+
+Table: actions
+[]
+
+Table: sqlite_sequence
+[
+  {
+    "name": "userSkins",
+    "seq": 1
+  }
+]
+
+Table: server_config
+[]
+
+Table: server_roles
+[]
+
+Table: userSkins
+[
+  {
+    "id": 1,
+    "UserID": "138988836590977024",
+    "skinId": null,
+    "name": "Sawed-Off | Zander",
+    "description": "The classic Sawed-Off deals very heavy close-range damage, but with its low accuracy, high spread and slow rate of fire, you'd better kill what you hit.",
+    "weapon": "[object Object]",
+    "weaponId": null,
+    "weaponName": null,
+    "categoryId": null,
+    "categoryName": null,
+    "patternId": null,
+    "patternName": null,
+    "min_float": 0.05,
+    "max_float": 1,
+    "rarityId": null,
+    "rarityName": null,
+    "stattrak": 1,
+    "souvenir": 0,
+    "paint_index": 655,
+    "wears": "[object Object]",
+    "collections": "[object Object]",
+    "crates": "[object Object]",
+    "image": "https://steamcdn-a.akamaihd.net/apps/730/icons/econ/default_generated/weapon_sawedoff_aq_sawedoff_zander2_light_large.514f7c6c606296838f56020877d7762c594dc4bd.png",
+    "caseCollection": null,
+    "skinName": null,
+    "rarity": "[object Object]",
+    "isStatTrak": "0",
+    "floatVal": 0.26,
+    "condition": "Field-Tested"
+  }
+]
+
