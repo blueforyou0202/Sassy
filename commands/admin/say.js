@@ -1,3 +1,5 @@
+const db = require(`${global.__basedir}/database`); // Make sure to include this line
+
 module.exports = {
     name: 'say',
     description: 'Makes the bot say a message.',

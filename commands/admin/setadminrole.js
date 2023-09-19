@@ -1,16 +1,18 @@
-// setadminrole.js
 const db = require('../../database');
 
 module.exports = {
   name: 'setadminrole',
   description: 'Sets the admin role for this server.',
   async execute(message, args) {
-    // Check if the user is the server owner or an existing admin
     if (message.author.id !== message.guild.ownerId) {
-      return message.reply("You don't have permission to set the admin role.");
+      return message.reply("You don't have permission to use this command.");
     }
 
-    // Get the role mention from the message
+    // Check if a role was mentioned
+    if (!args[0]) {
+      return message.reply("Please mention a role using '@RoleName'.");
+    }
+
     const roleMention = args[0];
     
     // Check if the role mention is in the correct format
@@ -48,3 +50,30 @@ module.exports = {
     });
   },
 };
+
+// // Function to check if the user has the admin role
+// async function checkAdminRole(guildId, member, message) {
+//   return new Promise((resolve, reject) => {
+//     // Fetch the admin role from the database for the current server
+//     db.get("SELECT * FROM server_roles WHERE server_id = ? AND permission_level = ?", [guildId, 1], (err, row) => {
+//       if (err) {
+//         console.error("Error fetching admin role:", err.message);
+//         reject(err);
+//       }
+
+//       if (row) {
+//         // Admin role found
+//         // Check if the member has the admin role
+//         const adminRole = message.guild.roles.cache.find(role => role.id === row.role_id);
+//         if (adminRole && member.roles.cache.has(adminRole.id)) {
+//           resolve(true); // User has the admin role
+//         } else {
+//           resolve(false); // User does not have the admin role
+//         }
+//       } else {
+//         // Admin role not found
+//         resolve(false); // User does not have the admin role
+//       }
+//     });
+//   });
+// }

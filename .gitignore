@@ -1,8 +1,7 @@
 # .gitignore
-
-# Ignore custom environment variables file
-config.env
+*.db
 config.json
-moderationLogs.db
-ecosystem.config.js
-del.js
+skins.json
+botowner/
+*.log
+

@@ -17,16 +17,19 @@ module.exports = {
         userInfoEmbed
             .setColor('#0099ff')  // Set the color
             .setTitle(`User Info: *${user.username}*`)  // Set the title
+            .setDescription(`ID: ${user.id}`)  // Add the user ID
+            .setThumbnail(user.displayAvatarURL())  // Add the avatar
             .addFields(
-            { name: 'User Tag', value: user.tag },
-            { name: 'Is A Bot', value: user.bot.toString() },  // Convert boolean to string
-            { name: 'Joined Server', value: new Date(member.joinedTimestamp).toLocaleDateString() },
-            { name: 'Joined Discord', value: new Date(user.createdTimestamp).toLocaleDateString() },
-            { name: 'Roles', value: member.roles.cache.map(role => role.toString()).join(' ,') }
-        );
-
+                { name: 'User Tag', value: user.tag },
+                { name: 'Joined Server', value: new Date(member.joinedTimestamp).toLocaleDateString() },
+                { name: 'Joined Discord', value: new Date(user.createdTimestamp).toLocaleDateString() },
+                { name: 'Roles', value: member.roles.cache.map(role => role.toString()).join(' ,') },
+                { name: 'Created At', value: new Date(user.createdAt).toLocaleDateString() },  // Convert to string
+                { name: 'Is Bot', value: user.bot ? 'Yes' : 'No' }  // Add if the user is a bot or not
+            );
 
         // Send the embed
         message.channel.send({ embeds: [userInfoEmbed] });
+
     },
 };

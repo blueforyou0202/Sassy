@@ -54,7 +54,6 @@ db.serialize(() => {
   db.run(`CREATE TABLE IF NOT EXISTS userSkins (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     UserID TEXT,
-    skinId TEXT,
     name TEXT,
     description TEXT,
     weapon TEXT,
@@ -80,7 +79,8 @@ db.serialize(() => {
     rarity TEXT,
     isStatTrak INTEGER,
     floatVal REAL,
-    condition TEXT
+    condition TEXT,
+    isListed INTEGER
   )`, (err) => {
     if (err) {
       console.error('User skins table creation failed:', err.message);
@@ -88,6 +88,31 @@ db.serialize(() => {
       console.log('User skins table created successfully.');
     }
   });
+
+  // Money Table
+  db.run(`CREATE TABLE IF NOT EXISTS Money (
+    UserID TEXT PRIMARY KEY,
+    Balance INTEGER DEFAULT 0
+  )`);
+
+  // Listings Table
+  db.run(`CREATE TABLE IF NOT EXISTS Listings (
+    ListingID INTEGER PRIMARY KEY AUTOINCREMENT,
+    UserID TEXT,
+    SkinID INTEGER,
+    Price INTEGER,
+    Timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+  )`);
+
+
+  // Transactions Table
+  db.run(`CREATE TABLE IF NOT EXISTS Transactions (
+    TransactionID INTEGER PRIMARY KEY AUTOINCREMENT,
+    BuyerID TEXT,
+    SellerID TEXT,
+    Price INTEGER,
+    Timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+  )`);
 });
 
 module.exports = db;

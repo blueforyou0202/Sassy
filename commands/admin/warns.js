@@ -1,16 +1,15 @@
-const { EmbedBuilder } = require('discord.js');
+const { MessageEmbed } = require('discord.js');
 const db = require('../../database');
 
 module.exports = {
   name: 'warns',
   description: 'Displays all warns on the server.',
   async execute(message, args) {
-    // Check if the user has the admin role or necessary permissions
-    const isAdmin = message.member.roles.cache.some(role => role.name === 'Admin'); // Replace 'Admin' with your admin role name
-    const hasPermission = message.member.permissions.has('MANAGE_MESSAGES'); // Change 'MANAGE_MESSAGES' to the desired permission if needed
+    // Check if the user has the admin role
+    const hasAdminRole = await checkAdminRole(message.guild.id, message.member, message);
 
-    if (!isAdmin && !hasPermission) {
-      return message.reply('You do not have permission to view warns.');
+    if (!hasAdminRole) {
+      return message.reply("You don't have permission to use this command.");
     }
 
     // Fetch all warn records from the database for this server
@@ -20,7 +19,7 @@ module.exports = {
         return;
       }
 
-      const warnsEmbed = new EmbedBuilder()
+      const warnsEmbed = new MessageEmbed()
         .setColor(0xFF0000)
         .setTitle('List of Warns')
         .setDescription('Here are the warns for this server:');
@@ -53,7 +52,34 @@ module.exports = {
 
       warnsEmbed.addFields(fields);
 
-      message.channel.send({ embeds: [warnsEmbed.build()] });
+      message.channel.send({ embeds: [warnsEmbed] });
     });
   },
 };
+
+// Function to check if the user has the admin role
+async function checkAdminRole(guildId, member, message) {
+  return new Promise((resolve, reject) => {
+    // Fetch the admin role from the database for the current server
+    db.get("SELECT * FROM server_roles WHERE server_id = ? AND permission_level = ?", [guildId, 1], (err, row) => {
+      if (err) {
+        console.error("Error fetching admin role:", err.message);
+        reject(err);
+      }
+
+      if (row) {
+        // Admin role found
+        // Check if the member has the admin role
+        const adminRole = message.guild.roles.cache.find(role => role.id === row.role_id);
+        if (adminRole && member.roles.cache.has(adminRole.id)) {
+          resolve(true); // User has the admin role
+        } else {
+          resolve(false); // User does not have the admin role
+        }
+      } else {
+        // Admin role not found
+        resolve(false); // User does not have the admin role
+      }
+    });
+  });
+}

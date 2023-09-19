@@ -43,7 +43,7 @@ module.exports = {
   async execute(message, args, client) {
     // winston.info('Execute function triggered');
 
-    db.all(`SELECT * FROM userSkins WHERE UserID = ?`, [message.author.id], async (err, rows) => {
+    db.all(`SELECT * FROM userSkins WHERE UserID = ? AND isListed = 0`, [message.author.id], async (err, rows) => {
       if (err) {
         winston.error(err);
         return;
@@ -60,12 +60,11 @@ module.exports = {
         const skins = groupedSkins[rarity];
 
         skins.forEach(row => {
-          const skinId = row.skinId;
-          const weapon = JSON.parse(row.weapon)?.name || 'Unknown';
+          const weapon = (row.weapon)?.name || 'Unknown';
           const wearCondition = getCondition(row.floatVal);
           const statTrak = row.isStatTrak ? "StatTrak™ " : "";
           const title = `[Skin Index #${row.id}] (${wearCondition}) ${statTrak}${weapon} | ${row.skinName}`;
-          const value = `Collection: ${row.caseCollection}\nWeapon: ${weapon}\nSkin: ${row.skinName}\nRarity: ${rarity}\nStatTrak: ${row.isStatTrak ? 'Yes' : 'No'}\nDescription: ${row.description}\nCategory: ${row.categoryName}\nPattern: ${row.patternName}\nMin Float: ${row.min_float}\nMax Float: ${row.max_float}\n SkinID: #${skinId}`;
+          const value = `Collection: ${row.caseCollection}\nWeapon: ${weapon}\nSkin: ${row.skinName}\nRarity: ${rarity}\nStatTrak: ${row.isStatTrak ? 'Yes' : 'No'}\nDescription: ${row.description}\nCategory: ${row.categoryName}\nPattern: ${row.patternName}\nMin Float: ${row.min_float}\nMax Float: ${row.max_float}`;
           fieldsArray.push({ name: title, value: value });
         });
 
